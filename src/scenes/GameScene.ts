@@ -23,31 +23,42 @@ export class GameScene extends Phaser.Scene {
   constructor() { super('GameScene'); }
 
   async create(): Promise<void> {
-    this.saveSystem = new SaveSystem(i18n.getLanguage());
-    this.saveData = await this.saveSystem.load();
-    i18n.setLanguage(this.saveData.language);
-    audio.applySettings(this.saveData.sound);
-    this.adSystem = new AdSystem(() => this.saveSystem.save());
-    this.registry.set('save', this.saveData);
-    this.drawCafe();
-    this.renderSlots();
-    this.scene.launch('UIScene');
-    const offline = this.saveSystem.calculateOfflineReward();
-    if (offline.coins > 0) new OfflineRewardPopup(this, offline.coins, () => this.giveOffline(offline.coins), () => void this.doubleOffline(offline.coins));
-    if (!this.saveData.tutorial.completed) this.scene.launch('TutorialScene');
-    this.time.addEvent({ delay: gameConfig.autosaveMs, loop: true, callback: () => void this.saveSystem.save() });
-    this.game.events.on('buy-worker', () => this.buyWorker());
-    this.game.events.on('buy-dish', () => this.buyDish());
-    this.game.events.on('upgrade-station', (id: StationId) => this.upgradeStation(id));
-    this.game.events.on('unlock-zone', (id: ZoneId) => this.unlockZone(id));
-    this.game.events.on('claim-quest', () => this.claimQuest());
-    this.game.events.on('reward-coins', () => void this.rewardCoins());
-    this.game.events.on('reward-boost', () => void this.rewardBoost());
-    this.game.events.on('reward-worker', () => void this.rewardWorker());
-    document.addEventListener('visibilitychange', () => { if (document.hidden) { audio.pause(); void this.saveSystem.save(); } else audio.resume(); });
+    try {
+      this.add.rectangle(0, 0, gameConfig.width, gameConfig.height, 0xf7d9a6).setOrigin(0);
+      this.add.text(360, 610, 'Loading cafe...', { fontSize: '30px', color: gameConfig.colors.text }).setOrigin(0.5);
+      this.saveSystem = new SaveSystem(i18n.getLanguage());
+      this.saveData = await this.saveSystem.load();
+      i18n.setLanguage(this.saveData.language);
+      audio.applySettings(this.saveData.sound);
+      this.adSystem = new AdSystem(() => this.saveSystem.save());
+      this.registry.set('save', this.saveData);
+      this.drawCafe();
+      this.renderSlots();
+      this.scene.launch('UIScene');
+      const offline = this.saveSystem.calculateOfflineReward();
+      if (offline.coins > 0) new OfflineRewardPopup(this, offline.coins, () => this.giveOffline(offline.coins), () => void this.doubleOffline(offline.coins));
+      if (!this.saveData.tutorial.completed) this.scene.launch('TutorialScene');
+      this.time.addEvent({ delay: gameConfig.autosaveMs, loop: true, callback: () => void this.saveSystem.save() });
+      this.game.events.on('buy-worker', () => this.buyWorker());
+      this.game.events.on('buy-dish', () => this.buyDish());
+      this.game.events.on('upgrade-station', (id: StationId) => this.upgradeStation(id));
+      this.game.events.on('unlock-zone', (id: ZoneId) => this.unlockZone(id));
+      this.game.events.on('claim-quest', () => this.claimQuest());
+      this.game.events.on('reward-coins', () => void this.rewardCoins());
+      this.game.events.on('reward-boost', () => void this.rewardBoost());
+      this.game.events.on('reward-worker', () => void this.rewardWorker());
+      document.addEventListener('visibilitychange', () => { if (document.hidden) { audio.pause(); void this.saveSystem.save(); } else audio.resume(); });
+    } catch (error) {
+      console.error('GameScene create failed', error);
+      this.children.removeAll(true);
+      this.add.rectangle(0, 0, gameConfig.width, gameConfig.height, 0xf7d9a6).setOrigin(0);
+      this.add.text(360, 520, 'Game start error', { fontSize: '38px', color: '#E46C6C', fontStyle: 'bold' }).setOrigin(0.5);
+      this.add.text(360, 590, 'Open DevTools Console and send the error.', { fontSize: '24px', color: gameConfig.colors.text, align: 'center', wordWrap: { width: 560 } }).setOrigin(0.5);
+    }
   }
 
   update(_time: number, delta: number): void {
+    if (!this.saveData) return;
     for (const st of Object.values(this.saveData.stations)) {
       if (!st.unlocked || st.level <= 0) continue;
       st.progress += delta / this.duration(st.id);

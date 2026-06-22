@@ -7,6 +7,7 @@ import { GameScene } from './scenes/GameScene';
 import { UIScene } from './scenes/UIScene';
 import { ShopScene } from './scenes/ShopScene';
 import { TutorialScene } from './scenes/TutorialScene';
+import { audio } from './systems/AudioSystem';
 
 export function createGame(): Phaser.Game {
   const config: Phaser.Types.Core.GameConfig = {
@@ -26,6 +27,19 @@ export function createGame(): Phaser.Game {
 
   window.addEventListener('contextmenu', (event) => event.preventDefault());
   window.addEventListener('touchmove', (event) => event.preventDefault(), { passive: false });
+  setupAudioUnlock();
 
   return new Phaser.Game(config);
+}
+
+function setupAudioUnlock(): void {
+  const unlock = () => {
+    void audio.unlock();
+    window.removeEventListener('pointerdown', unlock);
+    window.removeEventListener('touchstart', unlock);
+    window.removeEventListener('keydown', unlock);
+  };
+  window.addEventListener('pointerdown', unlock, { once: true });
+  window.addEventListener('touchstart', unlock, { once: true, passive: true });
+  window.addEventListener('keydown', unlock, { once: true });
 }

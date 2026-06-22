@@ -8,6 +8,7 @@ export class Button extends Phaser.GameObjects.Container {
   private readonly label: Phaser.GameObjects.Text;
   private enabled = true;
   private isPressed = false;
+  private lastClickAt = 0;
 
   constructor(
     scene: Phaser.Scene,
@@ -25,9 +26,11 @@ export class Button extends Phaser.GameObjects.Container {
     this.label = scene.add.text(0, -1, text, {
       fontFamily: 'Arial, sans-serif',
       fontSize: `${Math.max(17, Math.floor(buttonHeight * 0.32))}px`,
-      color: gameConfig.colors.text,
+      color: gameConfig.colors.cream,
       align: 'center',
       fontStyle: 'bold',
+      stroke: gameConfig.colors.darkBrown,
+      strokeThickness: buttonHeight >= 60 ? 3 : 2,
       wordWrap: { width: buttonWidth - 24 }
     }).setOrigin(0.5);
 
@@ -69,29 +72,32 @@ export class Button extends Phaser.GameObjects.Container {
     this.label.y = -1;
     this.setScale(1);
     if (!this.enabled || !trigger) return;
+    const now = performance.now();
+    if (now - this.lastClickAt < 160) return;
+    this.lastClickAt = now;
     audio.play('click');
     this.scene.tweens.add({ targets: this, scale: 1.04, duration: 80, yoyo: true, ease: 'Sine.easeOut' });
     this.onClick();
   }
 
   private redraw(): void {
-    const radius = Math.min(26, Math.floor(this.buttonHeight * 0.34));
-    const fill = this.enabled ? this.baseColor : 0xb6afa4;
+    const radius = Math.min(24, Math.floor(this.buttonHeight * 0.32));
+    const fill = this.enabled ? this.baseColor : 0xa9947c;
     const halfW = this.buttonWidth / 2;
     const halfH = this.buttonHeight / 2;
 
     this.shadow.clear();
-    this.shadow.fillStyle(0x8a5a34, 0.32);
+    this.shadow.fillStyle(0x3c2114, 0.34);
     this.shadow.fillRoundedRect(-halfW, -halfH + 8, this.buttonWidth, this.buttonHeight, radius);
 
     this.bg.clear();
-    this.bg.fillStyle(fill, 1);
+    this.bg.fillStyle(0x4a2a18, 1);
     this.bg.fillRoundedRect(-halfW, -halfH, this.buttonWidth, this.buttonHeight, radius);
-    this.bg.fillStyle(0xffffff, 0.22);
-    this.bg.fillRoundedRect(-halfW + 8, -halfH + 7, this.buttonWidth - 16, Math.max(12, this.buttonHeight * 0.38), radius - 4);
-    this.bg.lineStyle(3, 0xffffff, 0.72);
-    this.bg.strokeRoundedRect(-halfW + 1.5, -halfH + 1.5, this.buttonWidth - 3, this.buttonHeight - 3, radius);
-    this.bg.lineStyle(2, 0x8a5a34, 0.18);
-    this.bg.strokeRoundedRect(-halfW + 3, -halfH + 3, this.buttonWidth - 6, this.buttonHeight - 6, radius - 2);
+    this.bg.fillStyle(fill, 1);
+    this.bg.fillRoundedRect(-halfW + 4, -halfH + 4, this.buttonWidth - 8, this.buttonHeight - 10, Math.max(8, radius - 4));
+    this.bg.fillStyle(0xffffff, 0.2);
+    this.bg.fillRoundedRect(-halfW + 10, -halfH + 8, this.buttonWidth - 20, Math.max(12, this.buttonHeight * 0.34), Math.max(8, radius - 8));
+    this.bg.lineStyle(2, 0xfff7df, 0.56);
+    this.bg.strokeRoundedRect(-halfW + 6, -halfH + 6, this.buttonWidth - 12, this.buttonHeight - 14, Math.max(8, radius - 6));
   }
 }

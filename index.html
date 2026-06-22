@@ -6,7 +6,32 @@
     <meta name="theme-color" content="#f7d9a6" />
     <meta name="description" content="Капи Кафе: Merge Тайкун — уютная idle/merge tycoon HTML5 игра для Яндекс Игр." />
     <title>Капи Кафе: Merge Тайкун</title>
-    <script src="/sdk.js"></script>
+    <script>
+      window.__capiSdkLoadPromise = (function () {
+        var host = window.location.hostname;
+        var search = window.location.search;
+        var isLocal = host === 'localhost' || host === '127.0.0.1' || host === '';
+        var isGitHubPages = host.endsWith('.github.io');
+        var forceSdk = search.indexOf('ysdk=1') !== -1;
+        var shouldLoadSdk = forceSdk || (!isLocal && !isGitHubPages);
+
+        if (!shouldLoadSdk) {
+          return Promise.resolve(false);
+        }
+
+        return new Promise(function (resolve) {
+          var script = document.createElement('script');
+          script.src = '/sdk.js';
+          script.async = true;
+          script.onload = function () { resolve(true); };
+          script.onerror = function () {
+            console.warn('[Capi Cafe] YaGames SDK was not loaded. Starting in mock mode.');
+            resolve(false);
+          };
+          document.head.appendChild(script);
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="loading-screen">

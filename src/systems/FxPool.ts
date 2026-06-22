@@ -18,7 +18,6 @@ export class FxPool {
       }).setOrigin(0.5).setDepth(100).setVisible(false).setActive(false);
       this.coinTexts.push(text);
     }
-
     for (let i = 0; i < dotPoolSize; i += 1) {
       const dot = scene.add.circle(-500, -500, 5, 0xffffff, 1).setDepth(200).setVisible(false).setActive(false);
       this.dots.push(dot);
@@ -27,41 +26,18 @@ export class FxPool {
 
   flyCoins(x: number, y: number, amount: number): void {
     const text = this.takeText();
-    text.setText(`+${amount} 🪙`).setPosition(x, y).setAlpha(1).setScale(1).setVisible(true).setActive(true);
+    text.setText(`+${amount}`).setPosition(x, y).setAlpha(1).setScale(1).setVisible(true).setActive(true);
     this.scene.tweens.killTweensOf(text);
-    this.scene.tweens.add({
-      targets: text,
-      y: 105,
-      scale: 1.2,
-      alpha: 0,
-      duration: 850,
-      ease: 'Cubic.easeOut',
-      onComplete: () => this.releaseText(text)
-    });
+    this.scene.tweens.add({ targets: text, y: 105, scale: 1.2, alpha: 0, duration: 850, ease: 'Cubic.easeOut', onComplete: () => this.releaseText(text) });
     audio.play('coin');
   }
 
   burst(x: number, y: number, count = 14): void {
-    const dots = this.takeDots(count);
-    dots.forEach(dot => {
-      dot.setPosition(x, y)
-        .setRadius(Phaser.Math.Between(4, 8))
-        .setFillStyle(Phaser.Math.RND.pick(this.colors), 1)
-        .setAlpha(1)
-        .setScale(1)
-        .setVisible(true)
-        .setActive(true);
+    this.takeDots(count).forEach(dot => {
+      const color = this.colors[Phaser.Math.Between(0, this.colors.length - 1)] ?? 0xffffff;
+      dot.setPosition(x, y).setRadius(Phaser.Math.Between(4, 8)).setFillStyle(color, 1).setAlpha(1).setScale(1).setVisible(true).setActive(true);
       this.scene.tweens.killTweensOf(dot);
-      this.scene.tweens.add({
-        targets: dot,
-        x: x + Phaser.Math.Between(-110, 110),
-        y: y + Phaser.Math.Between(-90, 80),
-        alpha: 0,
-        scale: 0.2,
-        duration: 680,
-        ease: 'Cubic.easeOut',
-        onComplete: () => this.releaseDot(dot)
-      });
+      this.scene.tweens.add({ targets: dot, x: x + Phaser.Math.Between(-110, 110), y: y + Phaser.Math.Between(-90, 80), alpha: 0, scale: 0.2, duration: 680, ease: 'Cubic.easeOut', onComplete: () => this.releaseDot(dot) });
     });
   }
 
@@ -71,20 +47,8 @@ export class FxPool {
     this.dots = [];
   }
 
-  private takeText(): Phaser.GameObjects.Text {
-    return this.coinTexts.find(item => !item.active) ?? this.coinTexts[0];
-  }
-
-  private releaseText(text: Phaser.GameObjects.Text): void {
-    text.setVisible(false).setActive(false).setPosition(-500, -500);
-  }
-
-  private takeDots(count: number): Phaser.GameObjects.Arc[] {
-    const free = this.dots.filter(item => !item.active);
-    return free.slice(0, Math.min(count, free.length || this.dots.length));
-  }
-
-  private releaseDot(dot: Phaser.GameObjects.Arc): void {
-    dot.setVisible(false).setActive(false).setPosition(-500, -500);
-  }
+  private takeText(): Phaser.GameObjects.Text { return this.coinTexts.find(item => !item.active) ?? this.coinTexts[0]; }
+  private releaseText(text: Phaser.GameObjects.Text): void { text.setVisible(false).setActive(false).setPosition(-500, -500); }
+  private takeDots(count: number): Phaser.GameObjects.Arc[] { const free = this.dots.filter(item => !item.active); const pool = free.length > 0 ? free : this.dots; return pool.slice(0, Math.min(count, pool.length)); }
+  private releaseDot(dot: Phaser.GameObjects.Arc): void { dot.setVisible(false).setActive(false).setPosition(-500, -500); }
 }

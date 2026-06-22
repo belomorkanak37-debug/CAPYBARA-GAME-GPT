@@ -13,7 +13,17 @@ export function createDefaultSaveData(language: LanguageCode = 'ru'): SaveData {
     stations: Object.fromEntries(Object.values(stationConfigs).map(station => [station.id, { id: station.id, level: station.id === 'coffee' ? 1 : 0, unlocked: station.id === 'coffee', progress: 0 }])) as Record<StationId, SaveData['stations'][StationId]>,
     workers: [{ id: 'worker-1', category: 'worker', level: 1, slot: 0 }, { id: 'worker-2', category: 'worker', level: 1, slot: 1 }],
     dishes: [{ id: 'dish-1', category: 'dish', level: 1, slot: 0 }, { id: 'dish-2', category: 'dish', level: 1, slot: 1 }],
-    quests: createInitialQuests(), completedQuestIds: [], sound: { music: true, sfx: true }, language, lastExitAt: Date.now(), tutorial: { completed: false, step: 0 }, boosterUntil: 0, adsRemoved: false
+    quests: createInitialQuests(),
+    completedQuestIds: [],
+    sound: { music: true, sfx: true },
+    language,
+    lastExitAt: Date.now(),
+    tutorial: { completed: false, step: 0 },
+    boosterUntil: 0,
+    adsRemoved: false,
+    adCooldowns: {},
+    purchasedProductIds: [],
+    dailyReward: { streak: 0, lastClaimDay: '', claimedToday: false }
   };
 }
 
@@ -92,7 +102,10 @@ export class SaveSystem {
       stations: { ...fallback.stations, ...data.stations },
       sound: { ...fallback.sound, ...data.sound },
       tutorial: { ...fallback.tutorial, ...data.tutorial },
-      quests: data.quests?.length ? data.quests : fallback.quests
+      quests: data.quests?.length ? data.quests : fallback.quests,
+      adCooldowns: { ...fallback.adCooldowns, ...(data.adCooldowns ?? {}) },
+      purchasedProductIds: data.purchasedProductIds ?? fallback.purchasedProductIds,
+      dailyReward: { ...fallback.dailyReward, ...(data.dailyReward ?? {}) }
     };
   }
 }

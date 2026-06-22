@@ -37,13 +37,14 @@ class YandexSDK {
   private initPromise: Promise<void> | null = null;
 
   init(): Promise<void> {
-    this.initPromise ??= this.initInternal();
+    if (!this.initPromise) this.initPromise = this.initInternal();
     return this.initPromise;
   }
 
   private async initInternal(): Promise<void> {
     this.status = 'loading';
-    const loaded = await Promise.race([window.__capiSdkLoadPromise ?? Promise.resolve(Boolean(window.YaGames)), timeout(SDK_INIT_TIMEOUT_MS)]);
+    const sdkLoad = window.__capiSdkLoadPromise ?? Promise.resolve(Boolean(window.YaGames));
+    const loaded = await Promise.race([sdkLoad, timeout(SDK_INIT_TIMEOUT_MS)]);
 
     if (!loaded || !window.YaGames) {
       this.mock = true;

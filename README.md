@@ -29,7 +29,7 @@ docs/yandex-games.md
 ## Локальный запуск
 
 ```bash
-npm ci
+npm install
 npm run dev
 ```
 
@@ -44,7 +44,7 @@ http://localhost:5173/
 ## Проверка перед коммитом
 
 ```bash
-npm ci
+npm install
 npm run typecheck
 npm run build
 ```
@@ -73,7 +73,7 @@ Workflow находится здесь:
 Он выполняет:
 
 ```bash
-npm ci
+npm install --no-audit --no-fund
 npm run typecheck
 npm run build
 ```
@@ -93,7 +93,7 @@ https://belomorkanak37-debug.github.io/CAPYBARA-GAME-GPT/
 Для обхода кэша при проверке можно добавлять query-параметр:
 
 ```text
-https://belomorkanak37-debug.github.io/CAPYBARA-GAME-GPT/?v=stage2
+https://belomorkanak37-debug.github.io/CAPYBARA-GAME-GPT/?v=stage3
 ```
 
 ## Yandex Games SDK
@@ -113,7 +113,7 @@ src/systems/YandexSDK.ts
 ## Сборка архива для Яндекс Игр
 
 ```bash
-npm ci
+npm install
 npm run typecheck
 npm run build
 cd dist
@@ -154,6 +154,7 @@ vite.config.ts
 Проект находится в стадии hardening. Выполнены этапы:
 
 1. Блокеры Яндекс Игр и модерации: safe SDK loader, SDK fallback, recoverable saves, ad guards, listener cleanup.
-2. Стабильность сборки и запуск: package-lock, `npm ci`, `typecheck`, обновлённый Pages workflow.
+2. Стабильность сборки и запуск: workflow запускает install, typecheck и build.
+3. Визуальный polish: улучшены меню, HUD, кнопки, попапы, loading screen и базовая сцена кафе.
 
-Следующие этапы: визуальный polish, аудио polish, монетизация/retention, производительность, финальная упаковка.
+Следующие этапы: аудио polish, монетизация/retention, производительность, финальная упаковка.

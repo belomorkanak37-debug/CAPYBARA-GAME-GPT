@@ -1,6 +1,7 @@
 import { gameConfig } from '../config/gameConfig';
-import type { SaveData } from '../types';
+import type { RewardPlacement, SaveData } from '../types';
 import { audio } from './AudioSystem';
+import { analytics } from './AnalyticsSystem';
 import { yandexSDK } from './YandexSDK';
 
 export interface InterstitialContext {
@@ -9,7 +10,15 @@ export interface InterstitialContext {
   isPopupOpen?: boolean;
   lastUserActionAt?: number;
   minIdleMs?: number;
+  placement?: string;
 }
+
+const rewardedCooldownMs: Record<RewardPlacement, number> = {
+  coins_300: 5 * 60 * 1000,
+  boost_2m: 10 * 60 * 1000,
+  free_worker: 15 * 60 * 1000,
+  offline_x2: 0
+};
 
 export class AdSystem {
   private lastAt = 0;
@@ -29,23 +38,53 @@ export class AdSystem {
     return true;
   }
 
-  async maybeShowInterstitial(data: SaveData, force = false, context: InterstitialContext = {}): Promise<boolean> {
-    if (!this.canShowInterstitial(data, force, context)) return false;
+  canShowRewarded(data: SaveData, placement: RewardPlacement): boolean {
+    const until = data.adCooldowns[placement] ?? 0;
+    return Date.now() >= until;
+  }
 
+  getRewardedCooldownLeftMs(data: SaveData, placement: RewardPlacement): number {
+    return Math.max(0, (data.adCooldowns[placement] ?? 0) - Date.now());
+  }
+
+  async maybeShowInterstitial(data: SaveData, force = false, context: InterstitialContext = {}): Promise<boolean> {
+    const placement = context.placement ?? 'interstitial';
+    if (!this.canShowInterstitial(data, force, context)) {
+      analytics.track('ad_interstitial_skipped', { placement });
+      return false;
+    }
+
+    analytics.track('ad_interstitial_requested', { placement });
     await this.save();
     audio.pause();
     const shown = await yandexSDK.showInterstitial();
     audio.resume();
     this.lastAt = Date.now();
+    analytics.track('ad_interstitial_closed', { placement, shown });
     return shown;
   }
 
-  async showRewarded(label: string, action: () => void): Promise<boolean> {
+  async showRewarded(placement: RewardPlacement, data: SaveData, action: () => void): Promise<boolean> {
+    if (!this.canShowRewarded(data, placement)) {
+      analytics.track('ad_rewarded_cooldown', { placement, leftMs: this.getRewardedCooldownLeftMs(data, placement) });
+      return false;
+    }
+
+    analytics.track('ad_rewarded_requested', { placement });
     await this.save();
     audio.pause();
     const result = await yandexSDK.showRewarded(action);
     audio.resume();
-    if (!result.granted) console.warn('[AdSystem] Reward was not granted', label, result.reason);
+
+    if (result.granted) {
+      data.adCooldowns[placement] = Date.now() + rewardedCooldownMs[placement];
+      analytics.track('ad_rewarded_granted', { placement });
+      await this.save();
+    } else {
+      analytics.track('ad_rewarded_failed', { placement, reason: result.reason ?? 'unknown' });
+      console.warn('[AdSystem] Reward was not granted', placement, result.reason);
+    }
+
     return result.granted;
   }
 }

@@ -21,27 +21,26 @@ export class UIScene extends Phaser.Scene {
     this.saveData = this.registry.get('save') as SaveData;
 
     this.drawTopBar();
-    this.coins = new CoinCounter(this, 126, 56, '🪙', this.saveData.coins);
-    this.stars = new CoinCounter(this, 342, 56, '⭐', this.saveData.stars);
-    this.level = new CoinCounter(this, 558, 56, '🏠', this.saveData.cafeLevel);
-    new Button(this, 665, 124, 76, 58, '⚙', () => this.openSettings(), 0x9ee6c5).setDepth(50);
+    this.level = new CoinCounter(this, 88, 58, 'lvl', this.saveData.cafeLevel).setDepth(70);
+    this.coins = new CoinCounter(this, 300, 58, 'coin', this.saveData.coins).setDepth(70);
+    this.stars = new CoinCounter(this, 514, 58, 'star', this.saveData.stars).setDepth(70);
+    new Button(this, 660, 58, 88, 58, 'MENU', () => this.openSettings(), 0x8b512a).setDepth(72);
 
+    this.drawSideNav();
     this.drawBottomBar();
-    new Button(this, 92, 1070, 112, 62, i18n.t('shop'), () => this.scene.launch('ShopScene'), 0xffd15c).setDepth(50);
-    new Button(this, 224, 1070, 126, 62, i18n.t('buyWorker'), () => this.game.events.emit('buy-worker'), 0x9ee6c5).setDepth(50);
-    new Button(this, 368, 1070, 126, 62, i18n.t('buyDish'), () => this.game.events.emit('buy-dish'), 0xffd15c).setDepth(50);
-    new Button(this, 512, 1070, 126, 62, i18n.t('upgrade'), () => this.game.events.emit('upgrade-station', 'coffee'), 0xf7a35c).setDepth(50);
-    new Button(this, 650, 1070, 112, 62, i18n.t('reward'), () => this.game.events.emit('reward-coins'), 0x62c370).setDepth(50);
+    new Button(this, 158, 1070, 232, 62, i18n.t('upgrade'), () => this.game.events.emit('upgrade-station', 'coffee'), 0x78af22).setDepth(72);
+    new Button(this, 418, 1070, 232, 62, i18n.t('reward'), () => this.game.events.emit('reward-coins'), 0x2d87b8).setDepth(72);
+    new Button(this, 632, 1070, 118, 62, i18n.t('shop'), () => this.scene.launch('ShopScene'), 0xf4a13d).setDepth(72);
 
-    this.questText = this.add.text(70, 1168, '', {
-      fontSize: '22px',
+    this.questText = this.add.text(70, 1164, '', {
+      fontSize: '21px',
       color: gameConfig.colors.text,
       fontStyle: 'bold',
-      wordWrap: { width: 440 }
-    }).setDepth(50);
-    this.add.rectangle(70, 1215, 410, 13, 0xffffff, 0.64).setOrigin(0, 0.5).setDepth(50);
-    this.questFill = this.add.rectangle(70, 1215, 1, 13, 0x62c370, 1).setOrigin(0, 0.5).setDepth(51);
-    new Button(this, 610, 1190, 160, 64, i18n.t('quests'), () => this.game.events.emit('claim-quest'), 0xffd15c).setDepth(50);
+      wordWrap: { width: 450 }
+    }).setDepth(72);
+    this.add.rectangle(70, 1214, 430, 15, 0x6b3b1e, 0.25).setOrigin(0, 0.5).setDepth(72);
+    this.questFill = this.add.rectangle(70, 1214, 1, 15, 0x78af22, 1).setOrigin(0, 0.5).setDepth(73);
+    new Button(this, 610, 1190, 162, 64, i18n.t('quests'), () => this.game.events.emit('claim-quest'), 0xffc83d).setDepth(72);
 
     this.game.events.on('save-changed', this.refresh, this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.game.events.off('save-changed', this.refresh, this));
@@ -57,7 +56,7 @@ export class UIScene extends Phaser.Scene {
     if (quest) {
       const progress = Math.min(quest.progress, quest.goal);
       this.questText?.setText(`${i18n.t(quest.textKey)}  ${progress}/${quest.goal}`);
-      if (this.questFill) this.questFill.width = Math.max(8, 410 * Phaser.Math.Clamp(progress / quest.goal, 0, 1));
+      if (this.questFill) this.questFill.width = Math.max(8, 430 * Phaser.Math.Clamp(progress / quest.goal, 0, 1));
     }
   }
 
@@ -68,21 +67,37 @@ export class UIScene extends Phaser.Scene {
   }
 
   private drawTopBar(): void {
-    const shadow = this.add.graphics().setDepth(40);
-    shadow.fillStyle(0x8a5a34, 0.18).fillRoundedRect(16, 14, 688, 104, 26);
-    const panel = this.add.graphics().setDepth(41);
-    panel.fillStyle(0xfff3d8, 0.95).fillRoundedRect(10, 8, 700, 104, 26);
-    panel.fillStyle(0xffffff, 0.26).fillRoundedRect(28, 18, 664, 34, 18);
-    panel.lineStyle(4, 0xd9914b, 0.75).strokeRoundedRect(10, 8, 700, 104, 26);
+    const shadow = this.add.graphics().setDepth(55);
+    shadow.fillStyle(0x3c2114, 0.28).fillRoundedRect(14, 14, 692, 92, 24);
+    const panel = this.add.graphics().setDepth(56);
+    panel.fillStyle(0x4a2a18, 1).fillRoundedRect(10, 8, 700, 92, 24);
+    panel.fillStyle(0x8b512a, 1).fillRoundedRect(20, 18, 680, 66, 18);
+    panel.fillStyle(0xffffff, 0.12).fillRoundedRect(34, 24, 652, 20, 12);
+    panel.lineStyle(3, 0xfff7df, 0.35).strokeRoundedRect(20, 18, 680, 66, 18);
+  }
+
+  private drawSideNav(): void {
+    const labels = [i18n.t('shop'), i18n.t('quests'), i18n.t('reward')];
+    const events = [() => this.scene.launch('ShopScene'), () => this.game.events.emit('claim-quest'), () => this.game.events.emit('reward-boost')];
+    labels.forEach((label, index) => {
+      const y = 340 + index * 112;
+      const bg = this.add.graphics().setDepth(64);
+      bg.fillStyle(0x3c2114, 0.24).fillRoundedRect(24, y - 38, 112, 86, 18);
+      bg.fillStyle(0x8b512a, 0.98).fillRoundedRect(18, y - 44, 112, 86, 18);
+      bg.fillStyle(0xffffff, 0.14).fillRoundedRect(28, y - 36, 92, 20, 10);
+      bg.lineStyle(3, 0xffc83d, 0.55).strokeRoundedRect(18, y - 44, 112, 86, 18);
+      this.add.text(74, y, label, { fontSize: '17px', color: gameConfig.colors.cream, fontStyle: 'bold', align: 'center', wordWrap: { width: 92 } }).setOrigin(0.5).setDepth(66);
+      this.add.zone(18, y - 44, 112, 86).setOrigin(0).setInteractive({ useHandCursor: true }).on('pointerup', events[index]);
+    });
   }
 
   private drawBottomBar(): void {
-    const shadow = this.add.graphics().setDepth(40);
-    shadow.fillStyle(0x8a5a34, 0.2).fillRoundedRect(16, 1000, 688, 252, 28);
-    const panel = this.add.graphics().setDepth(41);
-    panel.fillStyle(0xfff3d8, 0.97).fillRoundedRect(10, 988, 700, 252, 28);
-    panel.fillStyle(0xffffff, 0.24).fillRoundedRect(30, 1004, 660, 34, 18);
-    panel.lineStyle(4, 0xd9914b, 0.78).strokeRoundedRect(10, 988, 700, 252, 28);
-    this.add.text(54, 1128, i18n.t('dailyQuest'), { fontSize: '18px', color: gameConfig.colors.caramel, fontStyle: 'bold' }).setDepth(50);
+    const shadow = this.add.graphics().setDepth(55);
+    shadow.fillStyle(0x3c2114, 0.24).fillRoundedRect(18, 992, 684, 258, 32);
+    const panel = this.add.graphics().setDepth(56);
+    panel.fillStyle(0xfff7df, 0.98).fillRoundedRect(10, 982, 700, 258, 32);
+    panel.fillStyle(0xfff1cf, 0.96).fillRoundedRect(28, 1002, 664, 80, 24);
+    panel.lineStyle(4, 0xd8b17a, 0.82).strokeRoundedRect(10, 982, 700, 258, 32);
+    this.add.text(54, 1126, i18n.t('dailyQuest'), { fontSize: '18px', color: gameConfig.colors.caramel, fontStyle: 'bold' }).setDepth(72);
   }
 }

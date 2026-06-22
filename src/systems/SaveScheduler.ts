@@ -16,7 +16,7 @@ export class SaveScheduler {
       window.clearTimeout(this.timer);
       this.timer = null;
     }
-    if (!this.dirty || this.active) return;
+    if (this.active) return;
     this.dirty = false;
     this.active = true;
     try {
